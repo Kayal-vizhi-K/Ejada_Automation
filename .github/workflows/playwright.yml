@@ -1,0 +1,25 @@
+name: tests
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox
+      - run: npm test
+      - name: Generate Allure report
+        if: always()
+        run: npm run allure:generate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-report
+          path: allure-report
